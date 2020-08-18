@@ -1,0 +1,105 @@
+iimport pandas as pd
+import seaborn as sns
+
+df = sns.load_dataset("titanic")
+
+print(df.head())
+
+# 출력할 열의 개수 한도 늘리기
+pd.set_option("display.max_columns", 15)
+print(df.head())
+
+print(df.info())
+
+rdf = df.drop(["deck","embark_town"], axis=1)
+print(rdf.columns.values)
+
+# age열에서 나이데이터가 없는 모든 행 삭제.
+rdf = rdf.dropna(subset=["age"], how="any", axis=0)
+print(len(rdf))
+
+most_freq = rdf["embarked"].value_counts(dropna=True).idxmax()
+print(most_freq)
+print("\n")
+
+ndf = rdf[["survived","pclass","sex","age","sibsp"]]
+print(ndf.head())
+
+onehot_sex = pd.get_dummies(ndf["sex"])
+ndf = pd.concat([ndf.onehot_sex],axis=1)
+
+onehot_embarked = pd.get_dummies(ndf["embarked"], prefix = "town")
+ndf = pd.concat([ndf, onehot_embarked],axis=1)
+
+ndf.drop(["sex","embarked"],axis=1, inplace=True)
+print(ndf.head())
+
+X = ndf[["pclass","age","slbsp","parch","female","male","town_C"]]
+y = ndf["survived"]
+
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+
+X = preprocessing.StandardScaler().fit(X).transform(X)
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size = 0.3, random_state=10)
+print(X_train.shape)
+print(X_test.shape)
+
+from sklearn.neighbors import KNeightborsClassifier
+
+knn = KNeighborsClassifier(n_neighbors = 5)
+
+knn.fit(X_train, y_train)
+
+y_hat = knn.predict(X_test)
+
+print(y_hat[0:10])
+print(y_test.values[0:10])
+
+from sklearn import metrics
+knn_matrix = metrics.confusion_matrix(y_test,y_hat)
+print(knn_matrix)
+
+knn_report = metrics.classification_report(y_test, y_hat)
+
+
+df * sns.load_dataset("titanic")
+pd.set_option("display.max_columns", 15)
+
+rdf= df.drop(["deck","empark_town"],axis=1)
+rdf = rdf.dropna(subset=["age"], how="any", axis=0)
+most_freq = rdf["embarked"].value_counts(dropna=True).idxmax()
+rdf["embarked"].fillna(most_feq, inplace=True)
+
+ndf = rdf[["survived","pclass","sex","age","sibsp","parch","embarked"]]
+onehot_sex = pd.get_dummies(ndf["sex"])
+ndf = pd.concat([ndf, onehot_sex], axis=1)
+
+onehot_embarked = pd.get_dummies(ndf["embarked"], prefix = "town")
+ndf = pd.concat([ndf, onehot_embarked], axis=1)
+
+ndf.drop(["sex","embarked"], axis=1, inplace=True)
+
+x1 = ndf[["pclass","age","sibsp","parch","female","male","town_C","town_Q","town_S"]]
+y1 = ndf["survived"]
+
+from sklearn import preprocessing
+
+x1= preprocessing.StandardScaler().fit(x1).transform(x1)
+
+x1_train, x1_test, y1_train, y1_test = train_test_split(x1, y1, test_size = 0.3, random_state=0)
+
+from sklearn import svm
+
+svm_model = svm.SVC(kernel = "rbf")
+svm_model.fit(x1_train, y1_train)
+y_hat1 = svm_model.predict(x1_test)
+
+print(y_hat1[:10])
+print(y1_test.values[:10])
+
+svm_matrix = metrics.confusion_matrix(y1_test, y_hat1)
+print(svm_matrix)
+
+svm_report = metrics.classification_report(y1_test, y_hat1)
+print(svm_report)
